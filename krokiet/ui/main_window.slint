@@ -2,7 +2,7 @@ import { HorizontalBox, LineEdit, Palette, VerticalBox } from "std-widgets.slint
 import { FontSizes } from "fonts.slint";
 import { LeftSidePanel } from "left_side_panel.slint";
 import { MainList } from "main_lists.slint";
-import { ActiveTab, PopupRequest, ProgressToSend, SingleMainListModel } from "common.slint";
+import { ActiveTab, BottomPanelVisibility, PopupRequest, ProgressToSend, SingleMainListModel } from "common.slint";
 import { ActionButtons } from "action_buttons.slint";
 import { Progress } from "progress.slint";
 import { Settings } from "settings.slint";
@@ -26,6 +26,7 @@ import { PopupCleanExif } from "popup_clean_exif.slint";
 import { PopupCleanCache } from "popup_clean_cache.slint";
 import { ToolSettings } from "tool_settings.slint";
 import { Translations } from "translations.slint";
+import { ColorPalette } from "color_palette.slint";
 
 export {Settings, Callabler, GuiState, Translations, Palette}
 
@@ -53,6 +54,7 @@ export component MainWindow inherits Window {
     min-height: 300px;
     preferred-height: 600px;
     in-out property <string> text_summary_text: "";
+    in-out property <length> bottom_panel_height: 200px;
     in-out property <bool> stop_requested: false;
     in-out property <bool> scanning: false;
     in-out property <bool> processing: false;
@@ -207,9 +209,34 @@ export component MainWindow inherits Window {
             }
         }
 
+        if action_buttons.bottom_panel_visibility != BottomPanelVisibility.NotVisible: Rectangle {
+            height: 6px;
+            vertical-stretch: 0;
+            background: divider_touch.has-hover || divider_touch.pressed ? ColorPalette.tab_selected_color : ColorPalette.line_item_color;
+
+            divider_touch := TouchArea {
+                width: parent.width;
+                height: 12px;
+                y: (parent.height - self.height) / 2;
+                mouse-cursor: row-resize;
+                moved => {
+                    if (self.pressed) {
+                        root.bottom_panel_height -= (self.mouse-y - self.pressed-y);
+                        if (root.bottom_panel_height < 150px) {
+                            root.bottom_panel_height = 150px;
+                        }
+                        if (root.bottom_panel_height > root.height - 250px) {
+                            root.bottom_panel_height = root.height - 250px;
+                        }
+                    }
+                }
+            }
+        }
+
         bottom_panel := BottomPanel {
             bottom_panel_visibility <=> action_buttons.bottom_panel_visibility;
-            vertical-stretch: 0.0;
+            vertical-stretch: 0;
+            preferred-height: root.bottom_panel_height;
             folder_choose_requested(included_paths) => {
                 root.folder_choose_requested(included_paths)
             }

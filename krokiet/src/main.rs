@@ -163,6 +163,8 @@ fn main() {
     // This is simpler solution, than setting sizes of popups manually for each language
     app.invoke_initialize_popup_sizes();
 
+    app.window().set_maximized(true);
+
     match app.run() {
         Ok(()) => {
             save_all_settings_to_file(&app, original_preset_idx);
